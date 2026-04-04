@@ -112,7 +112,7 @@ export struct BottomNavigationModule {
 @Component
 export struct HorizontalGraphicTextEntranceItem {
   @State title: string = '模块名';
-  @State icon: Resource = $r("app.media.ic_public_app");
+  @State icon: Resource = $r("app.media.doc");
 
   build() {
     Row() {
