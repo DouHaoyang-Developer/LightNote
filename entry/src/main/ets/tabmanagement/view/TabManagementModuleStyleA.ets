@@ -113,7 +113,7 @@ export struct TabManagementModuleStyleA {
 export struct DoubleStackGraphicTextItem {
   @State title: string = '模块名';
   @State content: string = '跳转';
-  @State image: Resource = $r("app.media.noImage");
+  @State image: Resource = $r("app.media.doc");
 
   build() {
     Stack({ alignContent: Alignment.TopStart }) {

@@ -28,7 +28,7 @@ export struct EmptyPagePathStack {
             this.appPathStack.pop();
           }
         })
-        Image($r("app.media.realImageGen_travel_0"))
+
       }
       .justifyContent(FlexAlign.SpaceBetween)
       .alignItems(HorizontalAlign.Center)

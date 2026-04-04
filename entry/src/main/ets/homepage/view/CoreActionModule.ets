@@ -107,7 +107,7 @@ export struct CoreActionModule {
 
 @Component
 export struct HorizontalGraphicTextDisplayItem1 {
-  @State image: Resource = $r('app.media.noImage');
+  @State image: Resource = $r('app.media.doc');
   @State mainText: string = '主标题文本';
   @State subText: string = '子标题文本';
   @State descriptionText: string = '这是一个描述文本，用于展示一些详细信息。';
