@@ -15,4 +15,6 @@
 build/
 oh_modules/
 local.properties
+*.iml
 .DS_Store
+gradle-wrapper.jar
