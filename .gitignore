@@ -10,3 +10,9 @@
 /.clang-tidy
 **/.test
 /.appanalyzer
+.idea/
+.hvigor/
+build/
+oh_modules/
+local.properties
+.DS_Store
