@@ -140,6 +140,6 @@ export struct BrowserTabManager {
     .width('100%')
     .height('100%')
     .backgroundColor('#F5F5F7')
-    .padding({ bottom: 33 }) //调整底部间距
+    .padding({ bottom: 34 }) //调整底部间距
   }
 }
