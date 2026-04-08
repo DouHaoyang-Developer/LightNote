@@ -13,8 +13,11 @@
  * limitations under the License.
  */
 
+import { router } from '@kit.ArkUI';
+
 @Component
 export struct BrowserTabManager {
+  @Consume('appPathStack') appPathStack: NavPathStack;
   build() {
     Column() {
       // 主内容区域 - 垂直居中偏上
@@ -131,6 +134,10 @@ export struct BrowserTabManager {
         }
         .width('33%')
         .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          // 返回主页
+          this.appPathStack.pop()
+        })
       }
       .width('100%')
       .height(60)

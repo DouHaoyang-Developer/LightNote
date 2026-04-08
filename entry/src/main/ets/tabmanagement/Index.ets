@@ -1,14 +1,14 @@
 import { PageMap } from './detail/SecondPageBuilder'
-import { HomePage } from './pages/HomePage';
+import { BrowserTabManager } from './view/BrowserTabManager';
 import { window } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 
-@Entry
+@Entry({ routeName: 'tabmanagement/Index' })
 @Component
 struct Index {
   private scroller: Scroller = new Scroller();
   @Provide('appPathStack') appPathStack: NavPathStack = new NavPathStack();
-  @State title: string = 'page_title';
+  @State title: string = '标签页管理';
 
   aboutToAppear(): void {
     // 页面显示时确保沉浸式效果
@@ -28,7 +28,7 @@ struct Index {
   // 设置沉浸式模式
   private setImmersiveMode(): void {
     let windowClass: window.Window | undefined = undefined;
-    window.getLastWindow(getContext(this), (err: BusinessError, data: window.Window) => {
+    window.getLastWindow(this.getUIContext().getHostContext(), (err: BusinessError, data: window.Window) => {
       if (err.code) {
         console.error('Failed to get window. Cause: ' + JSON.stringify(err));
         return;
@@ -44,8 +44,8 @@ struct Index {
 
       // 设置状态栏和导航栏样式
       let sysBarProps: window.SystemBarProperties = {
-        statusBarColor: '#F5F7F9', // 与界面背景色一致
-        navigationBarColor: '#F5F7F9', // 与界面背景色一致
+        statusBarColor: '#F5F5F7', // 与标签页管理界面背景色一致
+        navigationBarColor: '#F5F5F7', // 与标签页管理界面背景色一致
         statusBarContentColor: '#000000', // 黑色文字
         navigationBarContentColor: '#000000' // 黑色文字
       };
@@ -61,7 +61,7 @@ struct Index {
   // 恢复默认模式（可选）
   private resetImmersiveMode(): void {
     let windowClass: window.Window | undefined = undefined;
-    window.getLastWindow(getContext(this), (err: BusinessError, data: window.Window) => {
+    window.getLastWindow(this.getUIContext().getHostContext(), (err: BusinessError, data: window.Window) => {
       if (err.code) {
         console.error('Failed to get window. Cause: ' + JSON.stringify(err));
         return;
@@ -82,7 +82,7 @@ struct Index {
       Column() {
         Scroll(this.scroller) {
           Column() {
-            HomePage()
+            BrowserTabManager()
           }
           .width('100%')
           .justifyContent(FlexAlign.Start)
@@ -92,7 +92,7 @@ struct Index {
         .scrollBar(BarState.Off)
         .width('100%')
       }
-      .backgroundColor('#F5F7F9')
+      .backgroundColor('#F5F5F7')
       .height('100%')
     }
     .navDestination(PageMap)

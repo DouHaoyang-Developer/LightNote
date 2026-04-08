@@ -3,7 +3,7 @@ import { HomePage } from './pages/HomePage';
 import { window } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 
-@Entry
+@Entry({ routeName: 'homepage/Index' })
 @Component
 struct Index {
   private scroller: Scroller = new Scroller();
@@ -28,7 +28,7 @@ struct Index {
   // 设置沉浸式模式
   private setImmersiveMode(): void {
     let windowClass: window.Window | undefined = undefined;
-    window.getLastWindow(getContext(this), (err: BusinessError, data: window.Window) => {
+    window.getLastWindow(this.getUIContext().getHostContext(), (err: BusinessError, data: window.Window) => {
       if (err.code) {
         console.error('Failed to get window. Cause: ' + JSON.stringify(err));
         return;
@@ -61,7 +61,7 @@ struct Index {
   // 恢复默认模式（可选）
   private resetImmersiveMode(): void {
     let windowClass: window.Window | undefined = undefined;
-    window.getLastWindow(getContext(this), (err: BusinessError, data: window.Window) => {
+    window.getLastWindow(this.getUIContext().getHostContext(), (err: BusinessError, data: window.Window) => {
       if (err.code) {
         console.error('Failed to get window. Cause: ' + JSON.stringify(err));
         return;

@@ -5,6 +5,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 export struct HomePage {
   @State avoidAreaTop: number = 0;
   @State avoidAreaBottom: number = 0;
+  @Consume('appPathStack') appPathStack: NavPathStack;
 
   aboutToAppear(): void {
     // 获取避让区域信息，确保内容不会被状态栏和导航栏遮挡
@@ -14,7 +15,7 @@ export struct HomePage {
   // 获取避让区域信息
   private getAvoidArea(): void {
     let windowClass: window.Window | undefined = undefined;
-    window.getLastWindow(getContext(this), (err: BusinessError, data: window.Window) => {
+    window.getLastWindow(this.getUIContext().getHostContext(), (err: BusinessError, data: window.Window) => {
       if (err.code) {
         console.error('Failed to get window. Cause: ' + JSON.stringify(err));
         return;
@@ -62,7 +63,7 @@ export struct HomePage {
       .layoutWeight(1)
 
       // 底部悬浮图标导航栏 - 添加底部避让区域padding
-      BottomIconNavigation()
+      BottomIconNavigation({ appPathStack: this.appPathStack })
         .padding({ bottom: this.avoidAreaBottom })
     }
     .width('100%')
@@ -121,6 +122,8 @@ struct CapsuleButton {
 
 @Component
 struct BottomIconNavigation {
+  @Prop appPathStack: NavPathStack;
+
   build() {
     // 外层：全屏居中 + 底部留白
     Row() {
@@ -134,8 +137,21 @@ struct BottomIconNavigation {
         this.navItem($r('app.media.magnifyingglass'), Color.Black)
         // 加号
         this.navItem($r('app.media.plus'), Color.Black)
-        // 标签页
-        this.navItem($r('app.media.rectangle'), Color.Black)
+        // 标签页 - 第五个按钮
+        Column() {
+          Image($r('app.media.rectangle'))
+            .width(24)
+            .height(24)
+            .fillColor(Color.Black)
+        }
+        .flexGrow(1)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+        .height('100%')
+        .onClick(() => {
+          // 跳转到标签页管理页面
+          this.appPathStack.pushPathByName('tabmanagement/Index', null);
+        })
         // 菜单
         this.navItem($r('app.media.more'), Color.Black)
       }

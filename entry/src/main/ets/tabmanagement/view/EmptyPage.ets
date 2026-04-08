@@ -1,9 +1,10 @@
 import { router } from '@kit.ArkUI';
 
-@Entry
+@Entry({ routeName: 'EmptyPage' })
 @Component
 struct EmptyPage {
   @State content: string = (router.getParams() as Record<string, string>)['text'];
+  @Consume('appPathStack') appPathStack: NavPathStack;
 
   build() {
     Column() {
@@ -16,7 +17,7 @@ struct EmptyPage {
           .fontColor(Color.Blue)
       }
       .onClick(() => {
-        router.back();
+        this.appPathStack.pop();
       })
     }
     .justifyContent(FlexAlign.Center)
