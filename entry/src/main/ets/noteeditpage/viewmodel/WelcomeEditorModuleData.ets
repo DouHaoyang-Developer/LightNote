@@ -17,10 +17,10 @@ import LazyDataSource from '../util/LazyDataSource';
 export class Data {
   private static instance: Data;
   lazyDataSource: LazyDataSource<DataSource> = new LazyDataSource();
-  static readonly ICONS: Resource[] =
-    [$r('app.media.indent_right'), $r('app.media.exported')];
-  static readonly TITLES: string[] = ['左侧导航栏', '更多'];
-  static readonly DESCRIPTIONS: string[] = ['', '', '', ''];
+  static readonly IMAGES: Resource[] =
+    [$r(('app.media.realImageGen_education_2')), $r(('app.media.realImageGen_education_0'))];
+  static readonly TITLES: string[] = ['欢迎使用LightNote', '欢迎使用LightNote'];
+  static readonly CONTENTS: string[] = ['记录你的第一个想法...', '点击此处开始编辑笔记'];
 
   constructor() {
   }
@@ -42,12 +42,12 @@ export class Data {
      */
     return new Promise((resolve: Function) => {
       const modelList: Array<DataSource> = [];
-      for (let index = 0; index < Data.ICONS.length;
+      for (let index = 0; index < Data.IMAGES.length;
         index++) {
         modelList.push(new DataSource(
-          Data.ICONS[index],
+          Data.IMAGES[index],
           Data.TITLES[index],
-          Data.DESCRIPTIONS[index]));
+          Data.CONTENTS[index]));
       }
       this.lazyDataSource.pushArrayData(modelList);
       resolve();
@@ -56,25 +56,25 @@ export class Data {
 }
 
 export class DataSource {
-  private icon: Resource;
+  private image: Resource;
   private title: string;
-  private description: string;
+  private content: string;
 
-  constructor(icon: Resource, title: string, description: string) {
-    this.icon = icon;
+  constructor(image: Resource, title: string, content: string) {
+    this.image = image;
     this.title = title;
-    this.description = description;
-  }
-
-  getIcon(): Resource {
-    return this.icon;
+    this.content = content;
   }
 
   getTitle(): string {
     return this.title;
   }
 
-  getDescription(): string {
-    return this.description;
+  getContent(): string {
+    return this.content;
+  }
+
+  getImage(): Resource {
+    return this.image
   }
 }

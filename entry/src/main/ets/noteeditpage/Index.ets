@@ -1,9 +1,9 @@
 import { PageMap } from './detail/SecondPageBuilder'
-import { HomePage } from './pages/HomePage';
+import { NoteEditPage } from './pages/NoteEditPage';
 import { window } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 
-@Entry({ routeName: 'homepage/Index' })
+@Entry
 @Component
 struct Index {
   private scroller: Scroller = new Scroller();
@@ -63,7 +63,7 @@ struct Index {
       Column() {
         Scroll(this.scroller) {
           Column() {
-            HomePage()
+            NoteEditPage()
           }
           .width('100%')
           .justifyContent(FlexAlign.Start)
@@ -73,7 +73,7 @@ struct Index {
         .scrollBar(BarState.Off)
         .width('100%')
       }
-      .backgroundColor('#F5F7F9')
+      .backgroundColor('#F5F7F9') // 修改为浅灰色背景，与NoteEditPage保持一致
       .height('100%')
     }
     .navDestination(PageMap)

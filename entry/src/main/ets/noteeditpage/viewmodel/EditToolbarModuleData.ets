@@ -18,9 +18,10 @@ export class Data {
   private static instance: Data;
   lazyDataSource: LazyDataSource<DataSource> = new LazyDataSource();
   static readonly ICONS: Resource[] =
-    [$r('app.media.indent_right'), $r('app.media.exported')];
-  static readonly TITLES: string[] = ['左侧导航栏', '更多'];
-  static readonly DESCRIPTIONS: string[] = ['', '', '', ''];
+    [$r('app.media.undo'), $r('app.media.redo'), $r('app.media.textformat_size_square'),
+      $r('app.media.doc'), $r('app.media.label'), $r('app.media.paperclip'), $r('app.media.doc'),
+      $r('app.media.doc'), $r('app.media.doc')];
+  static readonly TITLES: string[] = ['撤销', '重做', '方括号', '文件', '标签', '回形针', 'H标题', 'B加粗', '键盘'];
 
   constructor() {
   }
@@ -46,8 +47,7 @@ export class Data {
         index++) {
         modelList.push(new DataSource(
           Data.ICONS[index],
-          Data.TITLES[index],
-          Data.DESCRIPTIONS[index]));
+          Data.TITLES[index]));
       }
       this.lazyDataSource.pushArrayData(modelList);
       resolve();
@@ -58,12 +58,10 @@ export class Data {
 export class DataSource {
   private icon: Resource;
   private title: string;
-  private description: string;
 
-  constructor(icon: Resource, title: string, description: string) {
+  constructor(icon: Resource, title: string) {
     this.icon = icon;
     this.title = title;
-    this.description = description;
   }
 
   getIcon(): Resource {
@@ -72,9 +70,5 @@ export class DataSource {
 
   getTitle(): string {
     return this.title;
-  }
-
-  getDescription(): string {
-    return this.description;
   }
 }

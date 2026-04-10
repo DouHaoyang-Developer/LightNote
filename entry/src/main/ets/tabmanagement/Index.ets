@@ -58,25 +58,6 @@ struct Index {
     });
   }
 
-  // 恢复默认模式（可选）
-  private resetImmersiveMode(): void {
-    let windowClass: window.Window | undefined = undefined;
-    window.getLastWindow(this.getUIContext().getHostContext(), (err: BusinessError, data: window.Window) => {
-      if (err.code) {
-        console.error('Failed to get window. Cause: ' + JSON.stringify(err));
-        return;
-      }
-      windowClass = data;
-
-      // 恢复默认布局
-      windowClass.setWindowLayoutFullScreen(false).then(() => {
-        console.info('Succeeded in resetting the window layout.');
-      }).catch((err: BusinessError) => {
-        console.error('Failed to resetting the window layout. Cause: ' + JSON.stringify(err));
-      });
-    });
-  }
-
   build() {
     Navigation(this.appPathStack) {
       Column() {

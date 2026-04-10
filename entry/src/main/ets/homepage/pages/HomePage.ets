@@ -88,10 +88,13 @@ struct TopNavigationBar {
         .layoutWeight(1)
         .textAlign(TextAlign.Center)
       // 右侧三点图标
-      Image($r('app.media.exported'))
-        .width(24)
-        .height(24)
-    }
+      Button() {
+        Image($r('app.media.exported'))
+          .width(24)
+          .height(24)
+      }
+      .backgroundColor(Color.White)
+     }
     .width('100%')
     .padding({
       top: 12,
@@ -160,10 +163,10 @@ struct BottomIconNavigation {
       .backgroundColor(Color.White)        // 纯白背景
       .borderRadius(32)                   // 胶囊大圆角
       .shadow({                            // 柔和悬浮阴影
-        radius: 25,
-        color: '#00000150',
+        radius: 12,
+        color: '#d7d7d7',
         offsetX: 0,
-        offsetY: 6
+        offsetY: 3
       })
       .padding({ left: 10, right: 10 })
       .alignItems(VerticalAlign.Center)    // 垂直居中
