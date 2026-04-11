@@ -76,10 +76,21 @@ export struct HomePage {
 struct TopNavigationBar {
   build() {
     Row() {
-      // 左侧列表图标
-      Image($r('app.media.indent_right'))
-        .width(24)
-        .height(24)
+      // 左侧列表图标按钮
+      Button({ type: ButtonType.Circle, stateEffect: true }) {
+        Image($r('app.media.indent_right'))
+          .width(24)
+          .height(24)
+      }
+      .borderRadius(20)
+      .backgroundColor(Color.White)
+      .shadow({
+        radius: 12,
+        color: '#d7d7d7',
+        offsetX: 0,
+        offsetY: 3
+      })
+
       // 中间标题
       Text('新标签页')
         .fontSize(18)
@@ -87,13 +98,21 @@ struct TopNavigationBar {
         .fontWeight(FontWeight.Medium)
         .layoutWeight(1)
         .textAlign(TextAlign.Center)
-      // 右侧三点图标
-      Button() {
+
+      // 右侧三点图标按钮
+      Button({ type: ButtonType.Circle, stateEffect: true }) {
         Image($r('app.media.exported'))
           .width(24)
           .height(24)
       }
+      .borderRadius(20)
       .backgroundColor(Color.White)
+      .shadow({
+        radius: 12,
+        color: '#d7d7d7',
+        offsetX: 0,
+        offsetY: 3
+      })
      }
     .width('100%')
     .padding({
@@ -141,15 +160,15 @@ struct BottomIconNavigation {
         // 加号
         this.navItem($r('app.media.plus'), Color.Black)
         // 标签页 - 第五个按钮
-        Column() {
+        Button({ type: ButtonType.Normal, stateEffect: true }) {
           Image($r('app.media.rectangle'))
             .width(24)
             .height(24)
             .fillColor(Color.Black)
         }
+        .backgroundColor(Color.Transparent)
+        .borderRadius(20)
         .flexGrow(1)
-        .justifyContent(FlexAlign.Center)
-        .alignItems(HorizontalAlign.Center)
         .height('100%')
         .onClick(() => {
           // 跳转到标签页管理页面
@@ -179,15 +198,15 @@ struct BottomIconNavigation {
   // 封装按钮：自动均分 + 居中
   @Builder
   navItem(icon: ResourceStr, color: string | Color) {
-    Column() {
+    Button({ type: ButtonType.Normal, stateEffect: true }) {
       Image(icon)
         .width(24)
         .height(24)
         .fillColor(color)
     }
+    .backgroundColor(Color.Transparent)
+    .borderRadius(20)
     .flexGrow(1)           // 6个按钮自动等分宽度
-    .justifyContent(FlexAlign.Center)
-    .alignItems(HorizontalAlign.Center)
     .height('100%')
   }
 }

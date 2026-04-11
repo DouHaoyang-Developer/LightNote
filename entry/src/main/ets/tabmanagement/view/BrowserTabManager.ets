@@ -44,7 +44,7 @@ export struct BrowserTabManager {
             // 右侧按钮组（添加间距）
             Row() {
               // 固定按钮
-              Column() {
+              Button({ type: ButtonType.Normal, stateEffect: true }) {
                 Image($r('app.media.pin'))
                   .width(14)
                   .height(14)
@@ -53,10 +53,9 @@ export struct BrowserTabManager {
               .height(26)
               .backgroundColor('#F0F0F0')
               .borderRadius(14)
-              .justifyContent(FlexAlign.Center)
 
               // 关闭按钮（添加左边距）
-              Column() {
+              Button({ type: ButtonType.Normal, stateEffect: true }) {
                 Image($r('app.media.xmark'))
                   .width(14)
                   .height(14)
@@ -65,7 +64,6 @@ export struct BrowserTabManager {
               .height(26)
               .backgroundColor('#F0F0F0')
               .borderRadius(14)
-              .justifyContent(FlexAlign.Center)
               .margin({ left: 8 })
             }
             .justifyContent(FlexAlign.End)
@@ -99,13 +97,13 @@ export struct BrowserTabManager {
       // 底部操作栏
       Row() {
         // 左侧加号按钮
-        Column() {
+        Button({ type: ButtonType.Normal, stateEffect: true }) {
           Image($r('app.media.plus'))
             .width(20)
             .height(20)
         }
+        .backgroundColor(Color.Transparent)
         .width('33%')
-        .justifyContent(FlexAlign.Center)
 
 
         // 中间标签页数量
@@ -115,9 +113,12 @@ export struct BrowserTabManager {
               .fontSize(15)
               .fontColor('#000000')
               .fontWeight(FontWeight.Medium)
-            Image($r('app.media.chevron_down'))
-              .width(20)
-              .height(20)
+            Button({ type: ButtonType.Normal, stateEffect: true }) {
+              Image($r('app.media.chevron_down'))
+                .width(20)
+                .height(20)
+            }
+            .backgroundColor(Color.Transparent)
           }
         }
         .width('34%')
@@ -125,10 +126,11 @@ export struct BrowserTabManager {
 
         // 右侧完成按钮
         Column() {
-          Text("完成")
+          Button("完成")
             .fontSize(15)
             .fontColor('#000000')
             .fontWeight(FontWeight.Medium)
+            .backgroundColor("#F5F5F7")
         }
         .width('33%')
         .justifyContent(FlexAlign.Center)
