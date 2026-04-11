@@ -116,7 +116,7 @@ export struct NoteEditPage {
 
         // 文件图标
         Row() {
-          Image($r('app.media.doc'))
+          Image($r('app.media.gallery_search_ocr'))
             .width(21)
             .height(21)
             .fillColor(Color.Black)
@@ -156,7 +156,7 @@ export struct NoteEditPage {
 
         // B加粗图标
         Row() {
-          Image($r('app.media.doc'))
+          Image($r('app.media.plus'))
             .width(21)
             .height(21)
             .fillColor(Color.Black)
@@ -166,7 +166,7 @@ export struct NoteEditPage {
 
         // 最右侧键盘图标按钮
         Row() {
-          Image($r('app.media.doc'))
+          Image($r('app.media.magnifyingglass'))
             .width(21)
             .height(21)
             .fillColor(Color.Black)

@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-import { router } from '@kit.ArkUI';
-
 @Component
 export struct BrowserTabManager {
   @Consume('appPathStack') appPathStack: NavPathStack;
@@ -140,7 +138,7 @@ export struct BrowserTabManager {
         })
       }
       .width('100%')
-      .height(60)
+      .height(35)
       .backgroundColor('#F5F5F7')
 
     }
