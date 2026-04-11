@@ -18,10 +18,10 @@ export class Data {
   private static instance: Data;
   lazyDataSource: LazyDataSource<DataSource> = new LazyDataSource();
   static readonly ICONS: Resource[] =
-    [$r('app.media.undo'), $r('app.media.redo'), $r('app.media.textformat_size_square'),
-      $r('app.media.doc'), $r('app.media.label'), $r('app.media.paperclip'), $r('app.media.doc'),
-      $r('app.media.doc'), $r('app.media.doc')];
-  static readonly TITLES: string[] = ['撤销', '重做', '方括号', '文件', '标签', '回形针', 'H标题', 'B加粗', '键盘'];
+    [$r('app.media.undo'), $r('app.media.redo'), $r('app.media.xiaoyi'),
+      $r('app.media.text_edit'), $r('app.media.plus'), $r('app.media.label'), $r('app.media.paperclip'),
+      $r('app.media.doc'), $r('app.media.magnifyingglass')];
+  static readonly TITLES: string[] = ['撤销', '重做', '小艺AI', '”T“文本字体编辑', '特殊字符块添加', '标签', '插入附件', '插入文件', '搜索'];
 
   constructor() {
   }

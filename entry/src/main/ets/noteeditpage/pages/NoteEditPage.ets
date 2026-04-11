@@ -26,12 +26,12 @@ export struct NoteEditPage {
 
         // 右上角：双图标组合圆角胶囊按钮（优化宽度，圆角20vp）
         Row() {
-            Image($r('app.media.book_pages_fill_1')) // 书本图标
+            Image($r('app.media.book_pages_fill_1')) // 阅读模式图标
               .width(24)
               .height(24)
               .fillColor(Color.Black)
               .margin({ right: 12 })
-            Image($r('app.media.dot_grid_2x2')) // 三点菜单图标
+            Image($r('app.media.dot_grid_2x2')) // 四点菜单图标
               .width(24)
               .height(24)
               .fillColor(Color.Black)
@@ -104,9 +104,18 @@ export struct NoteEditPage {
         .flexGrow(1)
         .justifyContent(FlexAlign.Center)
 
-        // 方括号图标
+        // 小艺AI图标
         Row() {
-          Image($r('app.media.textformat_size_square'))
+          Image($r('app.media.xiaoyi'))
+            .width(21)
+            .height(21)
+        }
+        .flexGrow(1)
+        .justifyContent(FlexAlign.Center)
+
+        // ”T“文本字体编辑图标
+        Row() {
+          Image($r('app.media.text_edit'))
             .width(21)
             .height(21)
             .fillColor(Color.Black)
@@ -114,9 +123,9 @@ export struct NoteEditPage {
         .flexGrow(1)
         .justifyContent(FlexAlign.Center)
 
-        // 文件图标
+        // 特殊字符块添加图标
         Row() {
-          Image($r('app.media.gallery_search_ocr'))
+          Image($r('app.media.plus'))
             .width(21)
             .height(21)
             .fillColor(Color.Black)
@@ -134,7 +143,7 @@ export struct NoteEditPage {
         .flexGrow(1)
         .justifyContent(FlexAlign.Center)
 
-        // 回形针图标
+        // 插入附件图标
         Row() {
           Image($r('app.media.paperclip'))
             .width(21)
@@ -144,7 +153,7 @@ export struct NoteEditPage {
         .flexGrow(1)
         .justifyContent(FlexAlign.Center)
 
-        // H标题图标
+        // 插入文件图标
         Row() {
           Image($r('app.media.doc'))
             .width(21)
@@ -154,17 +163,7 @@ export struct NoteEditPage {
         .flexGrow(1)
         .justifyContent(FlexAlign.Center)
 
-        // B加粗图标
-        Row() {
-          Image($r('app.media.plus'))
-            .width(21)
-            .height(21)
-            .fillColor(Color.Black)
-        }
-        .flexGrow(1)
-        .justifyContent(FlexAlign.Center)
-
-        // 最右侧键盘图标按钮
+        // 最右侧搜索按钮
         Row() {
           Image($r('app.media.magnifyingglass'))
             .width(21)
