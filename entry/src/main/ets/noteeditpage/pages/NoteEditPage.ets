@@ -180,9 +180,9 @@ export struct NoteEditPage {
         .borderRadius(20)
         .flexGrow(1)
 
-        // 最右侧搜索按钮
+        // 最右侧更多功能按钮
         Button({ type: ButtonType.Normal, stateEffect: true }) {
-          Image($r('app.media.magnifyingglass'))
+          Image($r('app.media.exported'))
             .width(21)
             .height(21)
             .fillColor(Color.Black)

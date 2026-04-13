@@ -20,8 +20,8 @@ export class Data {
   static readonly ICONS: Resource[] =
     [$r('app.media.undo'), $r('app.media.redo'), $r('app.media.xiaoyi'),
       $r('app.media.text_edit'), $r('app.media.plus'), $r('app.media.label'), $r('app.media.paperclip'),
-      $r('app.media.doc'), $r('app.media.magnifyingglass')];
-  static readonly TITLES: string[] = ['撤销', '重做', '小艺AI', '”T“文本字体编辑', '特殊字符块添加', '标签', '插入附件', '插入文件', '搜索'];
+      $r('app.media.doc'), $r('app.media.exported')];
+  static readonly TITLES: string[] = ['撤销', '重做', '小艺AI', '”T“文本字体编辑', '特殊字符块添加', '标签', '插入附件', '插入文件', '更多功能'];
 
   constructor() {
   }
