@@ -32,5 +32,11 @@
   }, {
     "name" : "widget1_display_name",
     "value" : "widget1"
+  }, {
+    "name" : "read_media_reason",
+    "value" : "用于读取笔记文件内容"
+  }, {
+    "name" : "write_media_reason",
+    "value" : "用于创建和保存笔记文件"
   } ]
 }

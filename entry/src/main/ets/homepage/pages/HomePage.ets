@@ -1,15 +1,33 @@
 import { window } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { common } from '@kit.AbilityKit';
+import router from '@ohos.router';
+import { FileService } from '../../utils/FileService';
+
+// BottomIconNavigation组件参数接口
+interface BottomIconNavigationParams {
+  appPathStack: NavPathStack;
+}
+
+// CapsuleButton组件参数接口
+interface CapsuleButtonParams {
+  text: string;
+}
 
 @Component
 export struct HomePage {
   @State avoidAreaTop: number = 0;
   @State avoidAreaBottom: number = 0;
   @Consume('appPathStack') appPathStack: NavPathStack;
+  private fileService: FileService = FileService.getInstance();
 
   aboutToAppear(): void {
     // 获取避让区域信息，确保内容不会被状态栏和导航栏遮挡
     this.getAvoidArea();
+    
+    // 设置文件服务的应用上下文
+    const context = getContext(this) as common.UIAbilityContext;
+    this.fileService.setContext(context);
   }
 
   // 获取避让区域信息
@@ -41,6 +59,30 @@ export struct HomePage {
     });
   }
 
+  // 创建新文件并跳转到编辑页面
+  private createNewFile(): void {
+    try {
+      // 强制转换为 string，排除 FileService 类型问题
+      const fileName = this.fileService.generateUniqueFileName('未命名', 'md') as string;
+      const filePath = this.fileService.createFile(fileName) as string;
+
+      console.info(`New file created: ${filePath}`);
+
+      router.pushUrl({
+        url: 'pages/noteeditpage/Index',
+        params: {
+          filePath: filePath,
+          fileName: fileName
+        }
+      }).catch(() => {
+        // TODO: Implement error handling.
+      });
+
+    } catch (error) {
+      console.error('Failed to create new file: ' + JSON.stringify(error));
+    }
+  }
+
   build() {
     Column() {
       // 顶部极简导航栏 - 使用优化后的避让区域
@@ -49,13 +91,13 @@ export struct HomePage {
       
       // 中间垂直居中的胶囊按钮区域
       Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center }) {
-        // 创建新文件按钮
-        CapsuleButton({ text: '创建新文件' })
+        // 创建新文件按钮 - 使用接口类型
+        CapsuleButton({ text: '创建新文件' } as CapsuleButtonParams)
           .onClick(() => {
-            // 创建新文件逻辑
+            this.createNewFile();
           })
-        // 关闭标签页按钮
-        CapsuleButton({ text: '关闭标签页' })
+        // 关闭标签页按钮 - 使用接口类型
+        CapsuleButton({ text: '关闭标签页' } as CapsuleButtonParams)
           .onClick(() => {
             // 关闭标签页逻辑
           })
@@ -63,7 +105,7 @@ export struct HomePage {
       .layoutWeight(1)
 
       // 底部悬浮图标导航栏 - 添加底部避让区域padding
-      BottomIconNavigation({ appPathStack: this.appPathStack })
+      BottomIconNavigation({ appPathStack: this.appPathStack } as BottomIconNavigationParams)
         .padding({ bottom: this.avoidAreaBottom })
     }
     .width('100%')
@@ -76,12 +118,14 @@ export struct HomePage {
 struct TopNavigationBar {
   build() {
     Row() {
-      // 左侧列表图标按钮
-      Button({ type: ButtonType.Circle, stateEffect: true }) {
+      // 左侧列表图标按钮 - 使用简化语法
+      Button() {
         Image($r('app.media.indent_right'))
           .width(24)
           .height(24)
       }
+      .type(ButtonType.Circle)
+      .stateEffect(true)
       .borderRadius(20)
       .backgroundColor(Color.White)
       .shadow({
@@ -99,12 +143,14 @@ struct TopNavigationBar {
         .layoutWeight(1)
         .textAlign(TextAlign.Center)
 
-      // 右侧三点图标按钮
-      Button({ type: ButtonType.Circle, stateEffect: true }) {
+      // 右侧三点图标按钮 - 使用简化语法
+      Button() {
         Image($r('app.media.exported'))
           .width(24)
           .height(24)
       }
+      .type(ButtonType.Circle)
+      .stateEffect(true)
       .borderRadius(20)
       .backgroundColor(Color.White)
       .shadow({
@@ -130,7 +176,9 @@ struct CapsuleButton {
   @Prop text: string = ''
 
   build() {
-    Button(this.text)
+    Button() {
+      Text(this.text)
+    }
     .width(160)
     .height(44)
     .fontSize(16)
@@ -159,20 +207,22 @@ struct BottomIconNavigation {
         this.navItem($r('app.media.magnifyingglass'), Color.Black)
         // 加号
         this.navItem($r('app.media.plus'), Color.Black)
-        // 标签页 - 第五个按钮
-        Button({ type: ButtonType.Normal, stateEffect: true }) {
+        // 标签页 - 第五个按钮 - 使用简化语法
+        Button() {
           Image($r('app.media.rectangle'))
             .width(24)
             .height(24)
             .fillColor(Color.Black)
         }
+        .type(ButtonType.Normal)
+        .stateEffect(false)
         .backgroundColor(Color.Transparent)
         .borderRadius(20)
         .flexGrow(1)
         .height('100%')
         .onClick(() => {
           // 跳转到标签页管理页面
-          this.appPathStack.pushPathByName('tabmanagement/Index', null);
+          this.appPathStack.pushPathByName('tabmanagement/Index', undefined);
         })
         // 菜单
         this.navItem($r('app.media.more'), Color.Black)
@@ -198,12 +248,14 @@ struct BottomIconNavigation {
   // 封装按钮：自动均分 + 居中
   @Builder
   navItem(icon: ResourceStr, color: string | Color) {
-    Button({ type: ButtonType.Normal, stateEffect: true }) {
+    Button() {
       Image(icon)
         .width(24)
         .height(24)
         .fillColor(color)
     }
+    .type(ButtonType.Circle)
+    .stateEffect(false)
     .backgroundColor(Color.Transparent)
     .borderRadius(20)
     .flexGrow(1)           // 6个按钮自动等分宽度

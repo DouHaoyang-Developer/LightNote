@@ -13,6 +13,12 @@
  * limitations under the License.
  */
 
+// Button组件参数接口
+interface ButtonParams {
+  type: ButtonType;
+  stateEffect: boolean;
+}
+
 @Component
 export struct BrowserTabManager {
   @Consume('appPathStack') appPathStack: NavPathStack;
@@ -96,44 +102,47 @@ export struct BrowserTabManager {
 
       // 底部操作栏
       Row() {
-        // 左侧加号按钮
-        Button({ type: ButtonType.Normal, stateEffect: true }) {
-          Image($r('app.media.plus'))
-            .width(20)
-            .height(20)
-        }
-        .backgroundColor(Color.Transparent)
-        .width('33%')
-
-
-        // 中间标签页数量
+        // 左侧加号按钮 - 圆形按钮
         Column() {
+          Button({ type: ButtonType.Normal, stateEffect: false }) {
+            Image($r('app.media.plus'))
+              .width(20)
+              .height(20)
+          }
+          .width(40)
+          .height(40)
+          .backgroundColor(Color.Transparent)
+          .borderRadius(20)
+        }
+        .width('25%')
+        .justifyContent(FlexAlign.Center)
+
+        // 中间标签页数量 - 减小宽度，居中显示
+        Button({ type: ButtonType.Normal, stateEffect: false }) {
           Row() {
             Text("1个标签页")
               .fontSize(15)
               .fontColor('#000000')
               .fontWeight(FontWeight.Medium)
-            Button({ type: ButtonType.Normal, stateEffect: true }) {
-              Image($r('app.media.chevron_down'))
-                .width(20)
-                .height(20)
-            }
-            .backgroundColor(Color.Transparent)
+            Image($r('app.media.chevron_down'))
+              .width(20)
+              .height(20)
           }
+          .justifyContent(FlexAlign.Center)
+          .alignItems(VerticalAlign.Center)
         }
-        .width('34%')
-        .justifyContent(FlexAlign.Center)
+        .backgroundColor(Color.Transparent)
+        .width('50%')
 
         // 右侧完成按钮
-        Column() {
-          Button("完成")
+        Button({ type: ButtonType.Normal, stateEffect: false }) {
+          Text("完成")
             .fontSize(15)
             .fontColor('#000000')
             .fontWeight(FontWeight.Medium)
-            .backgroundColor("#F5F5F7")
         }
-        .width('33%')
-        .justifyContent(FlexAlign.Center)
+        .backgroundColor(Color.Transparent)
+        .width('25%')
         .onClick(() => {
           // 返回主页
           this.appPathStack.pop()

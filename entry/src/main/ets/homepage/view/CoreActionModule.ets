@@ -42,7 +42,7 @@ export struct CoreActionModule {
   }
 
   jump(pageName: string = 'EmptyPagePathStack'): void {
-    this.appPathStack.pushPathByName(pageName, null);
+    this.appPathStack.pushPathByName(pageName, undefined);
   }
 
   loadResources(): void {
@@ -167,7 +167,7 @@ export struct CoreActionModuleTitleInfo {
   public onJump?: () => void;
 
   jump(): void {
-    this.appPathStack.pushPathByName('EmptyPagePathStack', null);
+    this.appPathStack.pushPathByName('EmptyPagePathStack', undefined);
   }
 
   build() {

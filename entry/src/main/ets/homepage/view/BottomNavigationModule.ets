@@ -40,7 +40,7 @@ export struct BottomNavigationModule {
   @StorageLink('currentWidthBreakpoint') currentWidthBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
 
   jump(pageName: string = 'EmptyPagePathStack'): void {
-    this.appPathStack.pushPathByName(pageName, null);
+    this.appPathStack.pushPathByName(pageName, undefined);
   }
 
   aboutToAppear() {
@@ -162,7 +162,7 @@ export struct BottomNavigationModuleTitleInfo {
   public onJump?: () => void;
 
   jump(): void {
-    this.appPathStack.pushPathByName('EmptyPagePathStack', null);
+    this.appPathStack.pushPathByName('EmptyPagePathStack', undefined);
   }
 
   build() {
