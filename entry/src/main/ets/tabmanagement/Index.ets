@@ -3,21 +3,41 @@ import { BrowserTabManager } from './view/BrowserTabManager';
 import { window } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 
+// 避让区域配置接口
+interface AvoidAreaConfig {
+  top: number;    // 顶部避让区域大小
+  bottom: number; // 底部避让区域大小
+}
+
+// 获取统一的避让区域配置
+function getAvoidAreaConfig(): AvoidAreaConfig {
+  return {
+    top: 35,    // 顶部避让区域大小
+    bottom: 60  // 底部避让区域大小
+  };
+}
+
 @Entry({ routeName: 'tabmanagement/Index' })
 @Component
 struct Index {
   private scroller: Scroller = new Scroller();
   @Provide('appPathStack') appPathStack: NavPathStack = new NavPathStack();
   @State title: string = '标签页管理';
+  @State avoidAreaTop: number = 0;
+  @State avoidAreaBottom: number = 0;
 
   aboutToAppear(): void {
     // 页面显示时确保沉浸式效果
     this.setImmersiveMode();
+    // 设置统一的避让区域
+    this.setAvoidArea();
   }
 
   onPageShow(): void {
     // 页面显示时设置沉浸式效果
     this.setImmersiveMode();
+    // 重新设置避让区域
+    this.setAvoidArea();
   }
 
   onPageHide(): void {
@@ -58,6 +78,14 @@ struct Index {
     });
   }
 
+  // 设置统一的避让区域
+  private setAvoidArea(): void {
+    const config: AvoidAreaConfig = getAvoidAreaConfig();
+    this.avoidAreaTop = config.top;
+    this.avoidAreaBottom = config.bottom;
+    console.info(`TabManagement Avoid area - Top: ${this.avoidAreaTop}, Bottom: ${this.avoidAreaBottom}`);
+  }
+
   build() {
     Navigation(this.appPathStack) {
       Column() {
@@ -75,6 +103,7 @@ struct Index {
       }
       .backgroundColor('#F5F5F7')
       .height('100%')
+      .padding({ top: this.avoidAreaTop, bottom: this.avoidAreaBottom })
     }
     .navDestination(PageMap)
     .hideTitleBar(true)

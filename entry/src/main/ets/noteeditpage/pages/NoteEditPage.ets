@@ -155,7 +155,7 @@ export struct NoteEditPage {
 
         // 主体区域为文本编辑区域
         TextArea({
-          placeholder: '开始编写您的笔记...',
+          placeholder: '开始编写你的笔记...',
           text: this.fileContent
         })
         .onChange((value: string) => {
@@ -163,7 +163,7 @@ export struct NoteEditPage {
         })
         .fontSize(16)
         .fontColor(Color.Black)
-        .backgroundColor(Color.White)
+        .backgroundColor("#F5F7F9")
         .borderRadius(12)
         .padding(16)
         .width('100%')

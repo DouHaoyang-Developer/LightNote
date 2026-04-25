@@ -1,3 +1,3 @@
 {
-  "src" : [ "noteeditpage/Index", "tabmanagement/Index", "homepage/Index" ]
+  "src" : [ "homepage/Index", "noteeditpage/Index", "tabmanagement/Index" ]
 }

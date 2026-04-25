@@ -4,21 +4,24 @@ import { common } from '@kit.AbilityKit';
 import router from '@ohos.router';
 import { FileService } from '../../utils/FileService';
 
-// BottomIconNavigation组件参数接口
-interface BottomIconNavigationParams {
-  appPathStack: NavPathStack;
+// 避让区域配置接口
+interface AvoidAreaConfig {
+  top: number;    // 顶部避让区域大小
+  bottom: number; // 底部避让区域大小
 }
 
-// CapsuleButton组件参数接口
-interface CapsuleButtonParams {
-  text: string;
+// 获取统一的避让区域配置
+function getAvoidAreaConfig(): AvoidAreaConfig {
+  return {
+    top: 35,    // 顶部避让区域大小
+    bottom: 60  // 底部避让区域大小
+  };
 }
 
 @Component
 export struct HomePage {
   @State avoidAreaTop: number = 0;
   @State avoidAreaBottom: number = 0;
-  @Consume('appPathStack') appPathStack: NavPathStack;
   private fileService: FileService = FileService.getInstance();
 
   aboutToAppear(): void {
@@ -44,17 +47,18 @@ export struct HomePage {
         // 获取避让区域
         let avoidArea: window.AvoidArea = windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
         
-        // 简化方案：使用固定的小值作为顶部避让区域
-        // 由于状态栏和导航栏已经沉浸式显示，我们只需要很小的避让区域
-        this.avoidAreaTop = 25; // 固定25vp，足够避让状态栏内容
-        this.avoidAreaBottom = avoidArea.bottomRect.height; // 底部保持原样
+        // 使用统一的避让区域配置
+        const config: AvoidAreaConfig = getAvoidAreaConfig();
+        this.avoidAreaTop = config.top;
+        this.avoidAreaBottom = avoidArea.bottomRect.height; // 底部使用系统实际值
         
-        console.info(`Avoid area - Top: ${this.avoidAreaTop}, Bottom: ${this.avoidAreaBottom}`);
+        console.info(`HomePage Avoid area - Top: ${this.avoidAreaTop}, Bottom: ${this.avoidAreaBottom}`);
       } catch (error) {
         console.error('Failed to get avoid area. Cause: ' + JSON.stringify(error));
         // 设置默认值
-        this.avoidAreaTop = 20; // 默认顶部避让20vp
-        this.avoidAreaBottom = 60; // 默认底部避让60vp
+        const config: AvoidAreaConfig = getAvoidAreaConfig();
+        this.avoidAreaTop = config.top;
+        this.avoidAreaBottom = config.bottom;
       }
     });
   }
@@ -69,7 +73,7 @@ export struct HomePage {
       console.info(`New file created: ${filePath}`);
 
       router.pushUrl({
-        url: 'pages/noteeditpage/Index',
+        url: 'noteeditpage/Index',
         params: {
           filePath: filePath,
           fileName: fileName
@@ -91,21 +95,42 @@ export struct HomePage {
       
       // 中间垂直居中的胶囊按钮区域
       Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center }) {
-        // 创建新文件按钮 - 使用接口类型
-        CapsuleButton({ text: '创建新文件' } as CapsuleButtonParams)
-          .onClick(() => {
-            this.createNewFile();
-          })
-        // 关闭标签页按钮 - 使用接口类型
-        CapsuleButton({ text: '关闭标签页' } as CapsuleButtonParams)
-          .onClick(() => {
-            // 关闭标签页逻辑
-          })
+        // 创建新文件按钮
+        Button() {
+          Text('创建新文件')
+        }
+        .width(160)
+        .height(44)
+        .fontSize(16)
+        .fontColor('#8B5CF6')
+        .fontWeight(FontWeight.Medium)
+        .backgroundColor('#F8FAFC')
+        .borderRadius(22)
+        .margin({ top: 12, bottom: 12 })
+        .onClick(() => {
+          this.createNewFile();
+        })
+        
+        // 关闭标签页按钮
+        Button() {
+          Text('关闭标签页')
+        }
+        .width(160)
+        .height(44)
+        .fontSize(16)
+        .fontColor('#8B5CF6')
+        .fontWeight(FontWeight.Medium)
+        .backgroundColor('#F8FAFC')
+        .borderRadius(22)
+        .margin({ top: 12, bottom: 12 })
+        .onClick(() => {
+          // 关闭标签页逻辑
+        })
       }
       .layoutWeight(1)
 
       // 底部悬浮图标导航栏 - 添加底部避让区域padding
-      BottomIconNavigation({ appPathStack: this.appPathStack } as BottomIconNavigationParams)
+      BottomIconNavigation()
         .padding({ bottom: this.avoidAreaBottom })
     }
     .width('100%')
@@ -118,7 +143,7 @@ export struct HomePage {
 struct TopNavigationBar {
   build() {
     Row() {
-      // 左侧列表图标按钮 - 使用简化语法
+      // 左侧列表图标按钮
       Button() {
         Image($r('app.media.indent_right'))
           .width(24)
@@ -143,7 +168,7 @@ struct TopNavigationBar {
         .layoutWeight(1)
         .textAlign(TextAlign.Center)
 
-      // 右侧三点图标按钮 - 使用简化语法
+      // 右侧三点图标按钮
       Button() {
         Image($r('app.media.exported'))
           .width(24)
@@ -172,28 +197,7 @@ struct TopNavigationBar {
 }
 
 @Component
-struct CapsuleButton {
-  @Prop text: string = ''
-
-  build() {
-    Button() {
-      Text(this.text)
-    }
-    .width(160)
-    .height(44)
-    .fontSize(16)
-    .fontColor('#8B5CF6') // 淡紫色文字
-    .fontWeight(FontWeight.Medium)
-    .backgroundColor('#F8FAFC') // 浅白色背景
-    .borderRadius(22) // 胶囊形状
-    .margin({ top: 12, bottom: 12 })
-  }
-}
-
-@Component
 struct BottomIconNavigation {
-  @Prop appPathStack: NavPathStack;
-
   build() {
     // 外层：全屏居中 + 底部留白
     Row() {
@@ -207,7 +211,7 @@ struct BottomIconNavigation {
         this.navItem($r('app.media.magnifyingglass'), Color.Black)
         // 加号
         this.navItem($r('app.media.plus'), Color.Black)
-        // 标签页 - 第五个按钮 - 使用简化语法
+        // 标签页 - 第五个按钮
         Button() {
           Image($r('app.media.rectangle'))
             .width(24)
@@ -222,7 +226,11 @@ struct BottomIconNavigation {
         .height('100%')
         .onClick(() => {
           // 跳转到标签页管理页面
-          this.appPathStack.pushPathByName('tabmanagement/Index', undefined);
+          router.pushUrl({
+            url: 'tabmanagement/Index'
+          }).catch(() => {
+            // TODO: Implement error handling.
+          });
         })
         // 菜单
         this.navItem($r('app.media.more'), Color.Black)
