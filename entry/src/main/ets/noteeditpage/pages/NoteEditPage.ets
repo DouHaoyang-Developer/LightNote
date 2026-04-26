@@ -150,7 +150,7 @@ export struct NoteEditPage {
           .fontWeight(FontWeight.Bold)
           .textAlign(TextAlign.Start)
           .lineHeight(36)
-          .margin({ left: 33, top: 28, bottom: 24 })
+          .margin({ left: 33, top: 15, bottom: 20 })
           .width('100%')
 
         // 主体区域为文本编辑区域

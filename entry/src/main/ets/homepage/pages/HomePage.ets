@@ -13,8 +13,8 @@ interface AvoidAreaConfig {
 // 获取统一的避让区域配置
 function getAvoidAreaConfig(): AvoidAreaConfig {
   return {
-    top: 35,    // 顶部避让区域大小
-    bottom: 60  // 底部避让区域大小
+    top: 30,    // 顶部避让区域大小
+    bottom: 20  // 底部避让区域大小
   };
 }
 
