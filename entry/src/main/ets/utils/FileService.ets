@@ -4,8 +4,8 @@ import { buffer } from '@kit.ArkTS';
 import { BusinessError } from '@kit.BasicServicesKit';
 
 /**
- * 文件服务工具类
- * 提供文件创建、读取、写入等功能
+ * 文件服务工具类（异步 I/O）
+ * 提供文件创建、读取、写入等功能，所有磁盘操作均为异步 Promise 风格
  */
 export class FileService {
   private static instance: FileService;
@@ -24,52 +24,44 @@ export class FileService {
   }
 
   /**
-   * 设置应用上下文
+   * 设置应用上下文（应在 EntryAbility.onCreate 中全局初始化）
    */
   public setContext(context: common.UIAbilityContext): void {
     this.context = context;
   }
 
   /**
-   * 获取应用文件目录路径
+   * 获取应用文件目录路径（公开方法，供其他模块如 TabManager 使用）
    */
-  private getFilesDir(): string {
+  public getBaseDirectory(): string {
     if (!this.context) {
-      console.error('Context is not set. Please call setContext() first.');
-      return '';
+      throw new Error('Context is not set. Call setContext() in EntryAbility.onCreate first.');
     }
     return this.context.filesDir;
   }
 
   /**
-   * 创建新文件
-   * @param fileName 文件名
-   * @returns 文件路径
+   * 获取应用文件目录路径
    */
-  public createFile(fileName: string): string {
-    const filesDir = this.getFilesDir();
-    if (!filesDir) {
-      console.error('Cannot get files directory');
-      return '';
-    }
-    
-    const filePath = `${filesDir}/${fileName}`;
-    
+  private getFilesDir(): string {
+    return this.getBaseDirectory();
+  }
+
+  /**
+   * 创建新文件（仅创建，不写入冗余空内容）
+   * @param fileName 文件名
+   * @returns 文件路径，失败返回空字符串
+   */
+  public async createFile(fileName: string): Promise<string> {
     try {
-      // 创建并打开文件
-      const file = fs.openSync(filePath, fs.OpenMode.CREATE | fs.OpenMode.READ_WRITE);
-      
-      // 写入初始内容（可以为空）
-      fs.writeSync(file.fd, '');
-      
-      // 关闭文件
-      fs.closeSync(file);
-      
-      console.info(`File created successfully: ${filePath}`);
+      const filesDir = this.getFilesDir();
+      const filePath = `${filesDir}/${fileName}`;
+      const file = await fs.open(filePath, fs.OpenMode.CREATE | fs.OpenMode.READ_WRITE);
+      await fs.close(file);
+      console.info(`File created: ${filePath}`);
       return filePath;
-    } catch (error) {
-      const err = error as BusinessError;
-      console.error(`Failed to create file: ${err.message}`);
+    } catch (err) {
+      console.error(`Failed to create file: ${(err as BusinessError).message}`);
       return '';
     }
   }
@@ -79,66 +71,70 @@ export class FileService {
    * @param filePath 文件路径
    * @returns 文件内容字符串
    */
-  public readFile(filePath: string): string {
+  public async readFile(filePath: string): Promise<string> {
     try {
-      // 检查文件是否存在
-      if (!fs.accessSync(filePath)) {
+      const accessResult = await fs.access(filePath);
+      if (!accessResult) {
         console.warn(`File does not exist: ${filePath}`);
         return '';
       }
 
-      // 打开文件
-      const file = fs.openSync(filePath, fs.OpenMode.READ_ONLY);
-      
-      // 获取文件大小
-      const stats = fs.statSync(filePath);
+      const file = await fs.open(filePath, fs.OpenMode.READ_ONLY);
+      const stats = await fs.stat(filePath);
       const fileSize = stats.size;
-      
-      // 读取文件内容
+
+      if (fileSize === 0) {
+        await fs.close(file);
+        return '';
+      }
+
       const arrayBuffer = new ArrayBuffer(fileSize);
-      const readOptions: ReadOptions = {
-        offset: 0,
-        length: fileSize
-      };
-      
-      const readLen = fs.readSync(file.fd, arrayBuffer, readOptions);
-      
-      // 转换为字符串
+      const readOptions: ReadOptions = { offset: 0, length: fileSize };
+      const readLen = await fs.read(file.fd, arrayBuffer, readOptions);
+      await fs.close(file);
+
       const buf = buffer.from(arrayBuffer, 0, readLen);
       const content = buf.toString();
-      
-      // 关闭文件
-      fs.closeSync(file);
-      
-      console.info(`File read successfully: ${filePath}`);
+      console.info(`File read: ${filePath}, size: ${fileSize}`);
       return content;
-    } catch (error) {
-      const err = error as BusinessError;
-      console.error(`Failed to read file: ${err.message}`);
+    } catch (err) {
+      console.error(`Failed to read file: ${(err as BusinessError).message}`);
       return '';
     }
   }
 
   /**
-   * 写入文件内容
+   * 写入文件内容（覆盖写入）
    * @param filePath 文件路径
    * @param content 要写入的内容
    */
-  public writeFile(filePath: string, content: string): void {
+  public async writeFile(filePath: string, content: string): Promise<void> {
     try {
-      // 打开文件（如果不存在则创建）
-      const file = fs.openSync(filePath, fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY | fs.OpenMode.TRUNC);
-      
-      // 写入内容
-      const writeLen = fs.writeSync(file.fd, content);
-      
-      // 关闭文件
-      fs.closeSync(file);
-      
-      console.info(`File written successfully: ${filePath}, length: ${writeLen}`);
-    } catch (error) {
-      const err = error as BusinessError;
-      console.error(`Failed to write file: ${err.message}`);
+      const file = await fs.open(
+        filePath,
+        fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY | fs.OpenMode.TRUNC
+      );
+      const writeLen = await fs.write(file.fd, content);
+      await fs.close(file);
+      console.info(`File written: ${filePath}, length: ${writeLen}`);
+    } catch (err) {
+      console.error(`Failed to write file: ${(err as BusinessError).message}`);
+    }
+  }
+
+  /**
+   * 重命名/移动文件
+   * @param oldPath 原文件路径
+   * @param newPath 新文件路径
+   */
+  public async renameFile(oldPath: string, newPath: string): Promise<boolean> {
+    try {
+      await fs.moveFile(oldPath, newPath);
+      console.info(`File renamed: ${oldPath} -> ${newPath}`);
+      return true;
+    } catch (err) {
+      console.error(`Failed to rename file: ${(err as BusinessError).message}`);
+      return false;
     }
   }
 
@@ -147,10 +143,10 @@ export class FileService {
    * @param filePath 文件路径
    * @returns 是否存在
    */
-  public fileExists(filePath: string): boolean {
+  public async fileExists(filePath: string): Promise<boolean> {
     try {
-      return fs.accessSync(filePath);
-    } catch (error) {
+      return await fs.access(filePath);
+    } catch (err) {
       return false;
     }
   }
@@ -161,38 +157,26 @@ export class FileService {
    * @param extension 文件扩展名
    * @returns 唯一文件名
    */
-  public generateUniqueFileName(baseName: string, extension: string): string {
+  public async generateUniqueFileName(baseName: string, extension: string): Promise<string> {
     const filesDir = this.getFilesDir();
-    if (!filesDir) {
-      console.error('Cannot get files directory');
-      return `${baseName}.${extension}`;
-    }
-    
     let fileName = `${baseName}.${extension}`;
     let counter = 1;
-    
-    // 检查文件是否已存在，如果存在则添加数字后缀
-    while (this.fileExists(`${filesDir}/${fileName}`)) {
+
+    while (await this.fileExists(`${filesDir}/${fileName}`)) {
       fileName = `${baseName}(${counter}).${extension}`;
       counter++;
     }
-    
+
     return fileName;
   }
 
   /**
-   * 获取所有.md文件列表
+   * 获取所有 .md 文件列表
    * @returns 文件路径数组
    */
-  public getMarkdownFiles(): string[] {
+  public async getMarkdownFiles(): Promise<string[]> {
     try {
       const filesDir = this.getFilesDir();
-      if (!filesDir) {
-        console.error('Cannot get files directory');
-        return [];
-      }
-      
-      // 创建ListFileOptions对象
       const listFileOption: ListFileOptions = {
         recursion: false,
         listNum: 0,
@@ -203,11 +187,10 @@ export class FileService {
           lastModifiedAfter: 0
         }
       };
-      
-      const files = fs.listFileSync(filesDir, listFileOption);
+      const files = await fs.listFile(filesDir, listFileOption);
       return files.map(file => `${filesDir}/${file}`);
-    } catch (error) {
-      console.error('Failed to list markdown files');
+    } catch (err) {
+      console.error(`Failed to list markdown files: ${(err as BusinessError).message}`);
       return [];
     }
   }

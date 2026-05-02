@@ -1,8 +1,8 @@
 import { window } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { common } from '@kit.AbilityKit';
 import router from '@ohos.router';
 import { FileService } from '../../utils/FileService';
+import { TabManager } from '../../tabmanagement/model/TabManager';
 
 // 避让区域配置接口
 interface AvoidAreaConfig {
@@ -22,15 +22,111 @@ function getAvoidAreaConfig(): AvoidAreaConfig {
 export struct HomePage {
   @State avoidAreaTop: number = 0;
   @State avoidAreaBottom: number = 0;
+  @State isCloseTabDisabled: boolean = true;
+  @State currentTabId: string = '';
+  @State tabCount: number = 0;
   private fileService: FileService = FileService.getInstance();
+  private tabManager: TabManager = TabManager.getInstance();
 
   aboutToAppear(): void {
-    // 获取避让区域信息，确保内容不会被状态栏和导航栏遮挡
     this.getAvoidArea();
-    
-    // 设置文件服务的应用上下文
-    const context = getContext(this) as common.UIAbilityContext;
-    this.fileService.setContext(context);
+    this.readPageParams();
+    this.ensureDefaultTab();
+    this.refreshTabState();
+    this.autoOpenEditorIfNeeded();
+  }
+
+  onPageShow(): void {
+    this.readPageParams();
+    this.ensureDefaultTab();
+    this.refreshTabState();
+  }
+
+  private readPageParams(): void {
+    const params = router.getParams() as Record<string, Object>;
+    if (params && params.tabId) {
+      this.currentTabId = params.tabId as string;
+    }
+  }
+
+  /**
+   * 确保当前页面有关联的标签（首次启动或恢复时自动创建）
+   */
+  private async ensureDefaultTab(): Promise<void> {
+    if (this.currentTabId) {
+      return;
+    }
+    await this.tabManager.init();
+    if (this.tabManager.getTabCount() === 0) {
+      this.currentTabId = await this.tabManager.addEmptyTab();
+    } else {
+      const activeTab = this.tabManager.getActiveTab();
+      this.currentTabId = activeTab ? activeTab.id : await this.tabManager.addEmptyTab();
+    }
+  }
+
+  private autoOpenEditorIfNeeded(): void {
+    const params = router.getParams() as Record<string, Object>;
+    if (params && params.autoOpenEditor && params.filePath && params.fileName) {
+      router.pushUrl({
+        url: 'noteeditpage/Index',
+        params: {
+          tabId: this.currentTabId,
+          filePath: params.filePath as string,
+          fileName: params.fileName as string
+        }
+      }).catch((err: Error) => {
+        console.error('Failed to navigate to editor: ' + err.message);
+      });
+    }
+  }
+
+  /**
+   * 刷新标签状态，控制"关闭标签页"按钮的可用性
+   */
+  private async refreshTabState(): Promise<void> {
+    await this.tabManager.init();
+    this.tabCount = this.tabManager.getTabCount();
+    this.isCloseTabDisabled = this.tabCount <= 1;
+  }
+
+  /**
+   * 关闭当前标签页并自动跳转到上一个标签页
+   */
+  private async closeCurrentTab(): Promise<void> {
+    if (this.isCloseTabDisabled) {
+      return;
+    }
+
+    const tabId = this.currentTabId || this.tabManager.getActiveTab()?.id;
+    if (!tabId) {
+      return;
+    }
+
+    await this.tabManager.removeTab(tabId);
+
+    // 获取删除后的新活跃标签，原地更新状态
+    const newActiveTab = this.tabManager.getActiveTab();
+    if (!newActiveTab) {
+      return;
+    }
+
+    this.currentTabId = newActiveTab.id;
+    this.tabCount = this.tabManager.getTabCount();
+    this.isCloseTabDisabled = this.tabCount <= 1;
+
+    if (!newActiveTab.isEmpty) {
+      router.pushUrl({
+        url: 'noteeditpage/Index',
+        params: {
+          tabId: newActiveTab.id,
+          filePath: newActiveTab.filePath,
+          fileName: newActiveTab.fileName
+        }
+      }).catch((err: Error) => {
+        console.error('Failed to navigate to editor: ' + err.message);
+      });
+    }
   }
 
   // 获取避让区域信息
@@ -64,26 +160,40 @@ export struct HomePage {
   }
 
   // 创建新文件并跳转到编辑页面
-  private createNewFile(): void {
+  private async createNewFile(): Promise<void> {
     try {
-      // 强制转换为 string，排除 FileService 类型问题
-      const fileName = this.fileService.generateUniqueFileName('未命名', 'md') as string;
-      const filePath = this.fileService.createFile(fileName) as string;
+      const fileName = await this.fileService.generateUniqueFileName('未命名', 'md');
+      const filePath = await this.fileService.createFile(fileName);
+
+      if (!filePath) {
+        console.error('Failed to create new file');
+        return;
+      }
+
+      const tabManager = TabManager.getInstance();
+
+      if (this.currentTabId) {
+        // Tab 管理模式下：更新当前标签的文件信息
+        await tabManager.setTabFile(this.currentTabId, fileName, filePath);
+      } else {
+        // 独立模式下：作为新标签创建
+        await tabManager.addTab(fileName, filePath);
+      }
 
       console.info(`New file created: ${filePath}`);
 
       router.pushUrl({
         url: 'noteeditpage/Index',
         params: {
+          tabId: this.currentTabId,
           filePath: filePath,
           fileName: fileName
         }
       }).catch(() => {
-        // TODO: Implement error handling.
+        console.error('Failed to navigate to note edit page');
       });
-
-    } catch (error) {
-      console.error('Failed to create new file: ' + JSON.stringify(error));
+    } catch (err) {
+      console.error('Failed to create new file: ' + JSON.stringify(err));
     }
   }
 
@@ -111,26 +221,27 @@ export struct HomePage {
           this.createNewFile();
         })
         
-        // 关闭标签页按钮
+        // 关闭标签页按钮（仅标签数 > 1 时可用）
         Button() {
           Text('关闭标签页')
         }
         .width(160)
         .height(44)
         .fontSize(16)
-        .fontColor('#8B5CF6')
+        .fontColor(this.isCloseTabDisabled ? '#B89EEE' : '#8B5CF6')
         .fontWeight(FontWeight.Medium)
-        .backgroundColor('#F8FAFC')
+        .backgroundColor(this.isCloseTabDisabled ? '#F0EEF5' : '#F8FAFC')
         .borderRadius(22)
         .margin({ top: 12, bottom: 12 })
+        .enabled(!this.isCloseTabDisabled)
         .onClick(() => {
-          // 关闭标签页逻辑
+          this.closeCurrentTab();
         })
       }
       .layoutWeight(1)
 
       // 底部悬浮图标导航栏 - 添加底部避让区域padding
-      BottomIconNavigation()
+      BottomIconNavigation({ tabCount: this.tabCount })
         .padding({ bottom: this.avoidAreaBottom })
     }
     .width('100%')
@@ -198,6 +309,8 @@ struct TopNavigationBar {
 
 @Component
 struct BottomIconNavigation {
+  @Prop tabCount: number = 0;
+
   build() {
     // 外层：全屏居中 + 底部留白
     Row() {
@@ -211,21 +324,26 @@ struct BottomIconNavigation {
         this.navItem($r('app.media.magnifyingglass'), Color.Black)
         // 加号
         this.navItem($r('app.media.plus'), Color.Black)
-        // 标签页 - 第五个按钮
+        // 标签页 - 第五个按钮（居中显示数量）
         Button() {
-          Image($r('app.media.rectangle'))
-            .width(24)
-            .height(24)
-            .fillColor(Color.Black)
+          Text(`${this.tabCount}`)
+            .fontSize(15)
+            .fontColor(Color.Black)
+            .fontWeight(FontWeight.Medium)
         }
         .type(ButtonType.Normal)
         .stateEffect(false)
         .backgroundColor(Color.Transparent)
-        .borderRadius(20)
+        .border({
+          width: 1.5,
+          color: Color.Black,
+          style: BorderStyle.Solid,
+          radius: 8
+        })
+        .borderRadius(8)
+        .height(24)
         .flexGrow(1)
-        .height('100%')
         .onClick(() => {
-          // 跳转到标签页管理页面
           router.pushUrl({
             url: 'tabmanagement/Index'
           }).catch(() => {
