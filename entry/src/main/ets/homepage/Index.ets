@@ -1,7 +1,8 @@
 import { PageMap } from './detail/SecondPageBuilder'
 import { HomePage } from './pages/HomePage';
-import { window } from '@kit.ArkUI';
+import { window, promptAction } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { common } from '@kit.AbilityKit';
 
 @Entry({ routeName: 'homepage/Index' })
 @Component
@@ -9,6 +10,26 @@ struct Index {
   private scroller: Scroller = new Scroller();
   @Provide('appPathStack') appPathStack: NavPathStack = new NavPathStack();
   @State title: string = 'page_title';
+  private lastBackPressTime: number = 0;
+  private readonly EXIT_INTERVAL: number = 2000;
+
+  onBackPress(): boolean | void {
+    const now = Date.now();
+    if (now - this.lastBackPressTime < this.EXIT_INTERVAL) {
+      // 2秒内第二次按返回，退出应用
+      const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      ctx.terminateSelf();
+      return true;
+    }
+
+    // 第一次按返回，提示再按一次
+    this.lastBackPressTime = now;
+    promptAction.showToast({
+      message: '再按一次返回退出应用',
+      duration: 2000
+    });
+    return true;
+  }
 
   aboutToAppear(): void {
     // 页面显示时确保沉浸式效果
