@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { CommonConstants } from '../common/CommonConstants'
+import { CommonConstants } from './CommonConstants'
 
 @Builder
 export function LoadingFailedView(handleReload?: () => void) {

@@ -15,12 +15,12 @@
 import {
   Data, DataSource
 } from '../viewmodel/TitleNavigationModuleData';
-import { LoadingStatus } from '../common/CommonEnums';
-import { LoadingFailedView } from '../view/LoadingFailedView';
-import { BreakpointConstants } from '../common/BreakpointConstants';
-import { BreakpointType } from '../util/BreakpointType';
-import LazyDataSource from '../util/LazyDataSource';
-import { CommonConstants } from '../common/CommonConstants';
+import { LoadingStatus } from '../../shared/CommonEnums';
+import { LoadingFailedView } from '../../shared/LoadingFailedView';
+import { BreakpointConstants } from '../../shared/BreakpointConstants';
+import { BreakpointType } from '../../shared/BreakpointType';
+import LazyDataSource from '../../shared/LazyDataSource';
+import { CommonConstants } from '../../shared/CommonConstants';
 
 @Component
 export struct TitleNavigationModule {

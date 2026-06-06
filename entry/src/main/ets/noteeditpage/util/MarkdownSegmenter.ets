@@ -108,7 +108,7 @@ function parseInlineMarkdown(text: string): MarkdownSegment[] {
       result.push({ text: '***', type: 'syntax' });
       const end = text.indexOf('***', i + 3);
       if (end > i + 3) {
-        result.push({ text: text.slice(i + 3, end), type: 'content' });
+        result.push(...parseInlineMarkdown(text.slice(i + 3, end)));
         result.push({ text: '***', type: 'syntax' });
         i = end + 3;
       } else {
@@ -122,7 +122,7 @@ function parseInlineMarkdown(text: string): MarkdownSegment[] {
       result.push({ text: '**', type: 'syntax' });
       const end = text.indexOf('**', i + 2);
       if (end > i + 2) {
-        result.push({ text: text.slice(i + 2, end), type: 'content' });
+        result.push(...parseInlineMarkdown(text.slice(i + 2, end)));
         result.push({ text: '**', type: 'syntax' });
         i = end + 2;
       } else {
@@ -136,7 +136,7 @@ function parseInlineMarkdown(text: string): MarkdownSegment[] {
       result.push({ text: '*', type: 'syntax' });
       const end = text.indexOf('*', i + 1);
       if (end > i + 1) {
-        result.push({ text: text.slice(i + 1, end), type: 'content' });
+        result.push(...parseInlineMarkdown(text.slice(i + 1, end)));
         result.push({ text: '*', type: 'syntax' });
         i = end + 1;
       } else {
@@ -164,7 +164,7 @@ function parseInlineMarkdown(text: string): MarkdownSegment[] {
       const closeParen = closeBracket > i ? text.indexOf(')', closeBracket + 2) : -1;
       if (closeParen > closeBracket) {
         result.push({ text: '[', type: 'syntax' });
-        result.push({ text: text.slice(i + 1, closeBracket), type: 'content' });
+        result.push(...parseInlineMarkdown(text.slice(i + 1, closeBracket)));
         result.push({ text: text.slice(closeBracket, closeParen + 1), type: 'syntax' });
         i = closeParen + 1;
         continue;
@@ -180,7 +180,7 @@ function parseInlineMarkdown(text: string): MarkdownSegment[] {
       const closeParen = closeBracket > i ? text.indexOf(')', closeBracket + 2) : -1;
       if (closeParen > closeBracket) {
         result.push({ text: '![', type: 'syntax' });
-        result.push({ text: text.slice(i + 2, closeBracket), type: 'content' });
+        result.push(...parseInlineMarkdown(text.slice(i + 2, closeBracket)));
         result.push({ text: text.slice(closeBracket, closeParen + 1), type: 'syntax' });
         i = closeParen + 1;
         continue;

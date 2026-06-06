@@ -1,4 +1,4 @@
-import LazyDataSource from '../util/LazyDataSource';
+import LazyDataSource from '../../shared/LazyDataSource';
 
 export class DataSourceStyleAStyleA {
   private icon: Resource;

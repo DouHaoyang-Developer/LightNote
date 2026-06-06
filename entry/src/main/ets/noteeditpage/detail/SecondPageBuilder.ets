@@ -13,7 +13,7 @@
 * limitations under the License.
 */
 import { EmptyPagePathStack } from '../detail/EmptyPagePathStack';
-import { SecondPageSearch } from '../detail/SecondPageSearch';
+import { SecondPageSearch } from '../../shared/SecondPageSearch';
 
 // import reference line
 @Builder

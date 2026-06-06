@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { CommonConstants } from '../common/CommonConstants';
+import { CommonConstants } from './CommonConstants';
 
 
 @Component

@@ -12,20 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { BreakpointConstants } from "./BreakpointConstants";
 
-/**
- * Common constants for common component.
- */
-export class CommonConstants {
-  static readonly HARMONY_HEI_TI_FONT_FAMILY = 'HarmonyHeiTi';
-  static readonly FULL_PERCENT: string = '100%';
-  static readonly WINDOW_UTIL: string = 'windowUtil';
-  /**
-   * Font weight 500.
-   */
-  static readonly FONT_WEIGHT_500: number = 500;
-  /**
-   * Device types.
-   */
-  static readonly DEVICE_TYPES: string[] = ['2in1', 'tablet', 'phone'];
+export class BreakpointType<T> {
+  sm: T;
+  md: T;
+  lg: T;
+
+  constructor(sm: T, md: T, lg: T) {
+    this.sm = sm;
+    this.md = md;
+    this.lg = lg;
+  }
+
+  getValue(currentWidthBreakpoint: string): T {
+    if (currentWidthBreakpoint === BreakpointConstants.BREAKPOINT_MD) {
+      return this.md;
+    }
+    if (currentWidthBreakpoint === BreakpointConstants.BREAKPOINT_LG) {
+      return this.lg;
+    } else {
+      return this.sm;
+    }
+  }
 }

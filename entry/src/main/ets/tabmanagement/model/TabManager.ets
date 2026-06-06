@@ -27,6 +27,8 @@ export class TabManager {
   private tabs: TabItem[] = [];
   private fileService: FileService = FileService.getInstance();
   private initialized: boolean = false;
+  private saveTimer: number = -1;
+  private static readonly SAVE_DEBOUNCE_MS: number = 500;
 
   private static readonly STATE_FILE = 'tabs_state.json';
 
@@ -100,7 +102,7 @@ export class TabManager {
     newTab.createdAt = Date.now();
 
     this.tabs.push(newTab);
-    await this.saveState();
+    this.debouncedSaveState();
     console.info(`Tab added: ${fileName}`);
     return id;
   }
@@ -131,7 +133,7 @@ export class TabManager {
       nextActive.isActive = true;
     }
 
-    await this.saveState();
+    this.debouncedSaveState();
     console.info(`Tab removed: ${tabId}`);
   }
 
@@ -148,7 +150,7 @@ export class TabManager {
     }
 
     tab.isPinned = !tab.isPinned;
-    await this.saveState();
+    this.debouncedSaveState();
   }
 
   /**
@@ -159,7 +161,7 @@ export class TabManager {
     await this.ensureInitialized();
 
     this.tabs.forEach(tab => tab.isActive = (tab.filePath === filePath));
-    await this.saveState();
+    this.debouncedSaveState();
   }
 
   /**
@@ -204,7 +206,7 @@ export class TabManager {
 
     tab.fileName = newFileName;
     tab.filePath = newFilePath;
-    await this.saveState();
+    this.debouncedSaveState();
     console.info(`Tab updated: ${oldFilePath} -> ${newFilePath}`);
   }
 
@@ -221,6 +223,14 @@ export class TabManager {
   public async addEmptyTab(): Promise<string> {
     await this.ensureInitialized();
 
+    // 若已有空标签则直接激活，避免创建多个空标签
+    const existingEmpty = this.tabs.find(t => t.filePath === '');
+    if (existingEmpty) {
+      this.tabs.forEach(tab => tab.isActive = (tab.id === existingEmpty.id));
+      this.debouncedSaveState();
+      return existingEmpty.id;
+    }
+
     this.tabs.forEach(tab => tab.isActive = false);
 
     const id = this.generateId();
@@ -233,7 +243,7 @@ export class TabManager {
     newTab.createdAt = Date.now();
 
     this.tabs.push(newTab);
-    await this.saveState();
+    this.debouncedSaveState();
     console.info(`Empty tab added: ${id}`);
     return id;
   }
@@ -250,11 +260,25 @@ export class TabManager {
       return;
     }
 
+    // 防止多个标签关联同一文件：若已有其他标签持有此 filePath，则合并（删除当前标签）
+    const conflictingTab = this.tabs.find(t => t.filePath === filePath && t.id !== tabId);
+    if (conflictingTab) {
+      conflictingTab.isActive = true;
+      this.tabs.forEach(t => { t.isActive = (t.id === conflictingTab.id); });
+      const idx = this.tabs.findIndex(t => t.id === tabId);
+      if (idx !== -1) {
+        this.tabs.splice(idx, 1);
+      }
+      this.debouncedSaveState();
+      console.info(`Tab ${tabId} merged into ${conflictingTab.id} for file ${filePath}`);
+      return;
+    }
+
     tab.fileName = fileName;
     tab.filePath = filePath;
     tab.isActive = true;
     this.tabs.forEach(t => { if (t.id !== tabId) { t.isActive = false; } });
-    await this.saveState();
+    this.debouncedSaveState();
     console.info(`Tab file set: ${tabId} -> ${fileName}`);
   }
 
@@ -271,7 +295,7 @@ export class TabManager {
 
     tab.fileName = '';
     tab.filePath = '';
-    await this.saveState();
+    this.debouncedSaveState();
     console.info(`Tab file cleared: ${tabId}`);
   }
 
@@ -282,7 +306,33 @@ export class TabManager {
     await this.ensureInitialized();
 
     this.tabs.forEach(tab => tab.isActive = (tab.id === tabId));
-    await this.saveState();
+    this.debouncedSaveState();
+  }
+
+  // ─── 持久化 Debounce ───────────────────────────
+
+  /**
+   * 延迟持久化（500ms 内的多次调用合并为一次写入）
+   */
+  private debouncedSaveState(): void {
+    if (this.saveTimer !== -1) {
+      clearTimeout(this.saveTimer);
+    }
+    this.saveTimer = setTimeout(() => {
+      this.saveTimer = -1;
+      this.saveState();
+    }, TabManager.SAVE_DEBOUNCE_MS);
+  }
+
+  /**
+   * 立即落盘（应用进入后台等关键时机调用）
+   */
+  public async flushState(): Promise<void> {
+    if (this.saveTimer !== -1) {
+      clearTimeout(this.saveTimer);
+      this.saveTimer = -1;
+      await this.saveState();
+    }
   }
 
   // ─── 私有方法 ────────────────────────────────────

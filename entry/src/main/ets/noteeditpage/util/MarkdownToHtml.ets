@@ -37,6 +37,50 @@ export function markdownToHtml(md: string): string {
     return `@@MEDIA_${mediaItems.length - 1}@@`;
   });
 
+  // 3.5 表格提取 → 占位符
+  const tableItems: string[] = [];
+  processed = processed.replace(
+    /(^\|.+\|[ \t]*\n)(^\|[-:| ]+\|[ \t]*\n)((?:^\|.+\|[ \t]*\n)*)/gm,
+    (_m: string): string => {
+      const lines = _m.trim().split('\n');
+      if (lines.length < 2) {
+        return _m;
+      }
+      // 解析表头
+      const headerCells = lines[0].split('|').filter((c: string) => c.trim() !== '');
+      // 数据行从第 2 行开始（第 1 行是分隔行）
+      const rows: string[][] = [];
+      for (let r = 2; r < lines.length; r++) {
+        const cells = lines[r].split('|').filter((c: string) => c.trim() !== '');
+        if (cells.length > 0) {
+          rows.push(cells);
+        }
+      }
+      let html = '';
+      // 表头
+      for (let c = 0; c < headerCells.length; c++) {
+        html += '<span style="fontWeight:bold">' + processInline(headerCells[c].trim()) + '</span>';
+        if (c < headerCells.length - 1) {
+          html += ' | ';
+        }
+      }
+      html += '\n';
+      // 分隔线
+      html += '<span style="color:#CCCCCC">' + '—'.repeat(20) + '</span>\n';
+      // 数据行
+      for (const row of rows) {
+        for (let c = 0; c < row.length; c++) {
+          html += processInline(row[c].trim());
+          if (c < row.length - 1) {
+            html += ' | ';
+          }
+        }
+        html += '\n';
+      }
+      tableItems.push('<p>' + html.replace(/\n/g, '</p><p>') + '</p>');
+      return '@@TABLE_' + (tableItems.length - 1) + '@@';
+    });
+
   // 4. 链接提取
   const linkItems: string[] = [];
   processed = processed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m: string, text: string, url: string): string => {
@@ -73,8 +117,8 @@ export function markdownToHtml(md: string): string {
       continue;
     }
 
-    // 水平分割线 → <p>───</p>
-    if (/^(---|\*\*\*|___)\s*$/.test(line.trim())) {
+    // 水平分割线 → <p>───</p>（排除表格分隔行 |---|）
+    if (!line.includes('|') && /^(---|\*\*\*|___)\s*$/.test(line.trim())) {
       flushList(result, inList);
       inList = null;
       result.push('<p>───</p>');
@@ -90,27 +134,31 @@ export function markdownToHtml(md: string): string {
       continue;
     }
 
-    // 无序列表
-    const ulMatch = line.match(/^[\-\*\+]\s+(.*)/);
-    if (ulMatch) {
-      if (inList !== 'ul') {
-        flushList(result, inList);
-        inList = 'ul';
-      }
-      result.push(`<p>• ${processInline(ulMatch[1])}</p>`);
-      continue;
-    }
+    // 列表项处理（支持缩进嵌套，用 paddingLeft 模拟层级）
+    const ulMatch = line.match(/^([ \t]*)[\-\*\+]\s+(.*)/);
+    const olMatch = line.match(/^([ \t]*)\d+\.\s+(.*)/);
 
-    // 有序列表
-    const olMatch = line.match(/^\d+\.\s+(.*)/);
-    if (olMatch) {
-      if (inList !== 'ol') {
+    if (ulMatch || olMatch) {
+      const indent: number = (ulMatch || olMatch)![1].length;
+      const content: string = processInline((ulMatch || olMatch)![2]);
+      const isOrdered: boolean = !!olMatch;
+      const listType: 'ul' | 'ol' = isOrdered ? 'ol' : 'ul';
+      const prefix: string = isOrdered
+        ? ((line.match(/^\s*\d+/) as string[])[0] || '1') + '. '
+        : '• ';
+
+      if (inList === null) {
+        inList = listType;
+      } else if (inList !== listType) {
         flushList(result, inList);
-        inList = 'ol';
+        inList = listType;
       }
-      const numMatch = line.match(/^\d+/);
-      const num = numMatch !== null ? numMatch[0] : '1';
-      result.push(`<p>${num}. ${processInline(olMatch[1])}</p>`);
+
+      if (indent > 0) {
+        result.push(`<p><span style="paddingLeft:${indent * 12}px">${prefix}${content}</span></p>`);
+      } else {
+        result.push(`<p>${prefix}${content}</p>`);
+      }
       continue;
     }
 
@@ -130,7 +178,7 @@ export function markdownToHtml(md: string): string {
     inList = null;
     flushQuote(result, inQuote);
     inQuote = false;
-    result.push(`<p>${processInline(restoreLine(line, inlineCodes, mediaItems, linkItems))}</p>`);
+    result.push(`<p>${processInline(restoreLine(line, inlineCodes, mediaItems, linkItems, tableItems))}</p>`);
   }
 
   flushList(result, inList);
@@ -151,7 +199,7 @@ function processInline(text: string): string {
 
 // ─── 辅助 ──────────────────────────────────────
 
-function restoreLine(line: string, codes: string[], media: string[], links: string[]): string {
+function restoreLine(line: string, codes: string[], media: string[], links: string[], tables: string[]): string {
   let l = line;
   for (let i = 0; i < codes.length; i++) {
     l = l.replace(`@@INLINECODE_${i}@@`, `<span style="fontFamily:monospace;background-color:#F0F0F0">${codes[i]}</span>`);
@@ -161,6 +209,9 @@ function restoreLine(line: string, codes: string[], media: string[], links: stri
   }
   for (let i = 0; i < links.length; i++) {
     l = l.replace(`@@LINK_${i}@@`, links[i]);
+  }
+  for (let i = 0; i < tables.length; i++) {
+    l = l.replace(`@@TABLE_${i}@@`, tables[i]);
   }
   return l;
 }

@@ -12,7 +12,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import LazyDataSource from '../util/LazyDataSource';
+import LazyDataSource from '../../shared/LazyDataSource';
 
 export class Data {
   private static instance: Data;
